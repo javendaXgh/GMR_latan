@@ -13,7 +13,7 @@ library(shiny)
 library(shinyWidgets)
 library(ggplot2)
 
-download.file('https://github.com/javendaXgh/GMR_latan/raw/master/global.rds','global.rds')
+#download.file('https://github.com/javendaXgh/GMR_latan/raw/master/global.rds','global.rds')
 
 global <- readRDS('global.rds')
 
@@ -55,7 +55,7 @@ global_filtros <- function (paises,
   if (inicio!= FALSE){
     filter(global, fecha>=inicio&fecha<=fin)-> global
   }
-  print(global)
+  #print(global)
   return(global)
 }
 
@@ -124,7 +124,7 @@ gg_comp_paises <- function(paises,
     
     theme(panel.background = element_rect(fill = 'grey70', colour = 'red'))+
     scale_color_manual(values = wes_palette("Royal1", n = length(paises)))+
-    grids(axis = c("xy", "x", "y"), color = "grey50",linetype = "dashed")+#BottleRocket1,Darjeeling2,Royal1
+    #grids(axis = c("xy", "x", "y"), color = "grey50",linetype = "dashed")+#BottleRocket1,Darjeeling2,Royal1
     #scale_color_brewer(palette = "Set1")+
     {if (hitos==TRUE & fecha_i<=df_eventos$a[1]& fecha_f>=df_eventos$a[length(df_eventos$a)])
       geom_vline(data=df_eventos, mapping=aes(xintercept=a), color="red",linetype="dotted", size=.5, alpha=.5)}+
@@ -162,11 +162,14 @@ sector <- c('lugares de trabajo'='lugares_de_trabajo',
 # Define UI for dataset viewer app ----
 ui <- shinyUI(fluidPage(
   setBackgroundColor(
-    color = "#2A9D8F"), #2A9D8F
-  
+    color = "#003049"), #2A9D8F,264653
+ 
   # App title ----
-  titlePanel("Gráficos con datos del
+  #titlePanel("Gráficos con datos del
+             #Google Mobility Report para países de Sur América"),
+  h1(id="big-heading", "Gráficos con datos del
              Google Mobility Report para países de Sur América"),
+  tags$style(HTML("#big-heading{color: #e9c46a;}")),
   
   # Sidebar layout with input and output definitions ----
   sidebarLayout(
@@ -191,13 +194,18 @@ ui <- shinyUI(fluidPage(
       br(),
 
       actionButton("update", "generar gráfico"),
-      helpText("Instrucciones de uso:
-      1) Seleccionar uno o más países colocando el puntero en el campo elegir un país e ir añadiendo país por país 
-      2) posteriormente seleccionar el sector a visualizar en el campo 'Elegir un sector'
-      3) Seleccionar un rango de fecha  no anterior al 2020-01-15
-      4) Seleccionar, o deseleccionar, botón para 'excluir fines de semana' del gráfico
-      5)Generar o actualizar el gráfico presionando el botón 'generar gráfico
-      6) Para eliminar un país seleccionarlo en el campo 'Elegir un país' con click en el mouse y presionar delete"),
+      helpText("Instrucciones de uso:"),
+      helpText("1) Seleccionar uno o más países colocando el puntero en el campo 'elegir un país' e ir añadiendo uno a uno "),
+      helpText("2) Seleccionar el sector a visualizar en el campo 'Elegir un sector"),
+      helpText("3) Seleccionar un rango de fechas no anterior al 2020-01-15 (formato 'año-mes-día')"),
+      helpText("4) Seleccionar, o deseleccionar, botón para 'excluir fines de semana' del gráfico"),
+      helpText("5) Generar o actualizar el gráfico presionando el botón 'generar gráfico"),
+      helpText("6) Para eliminar un país seleccionarlo en el campo 'Elegir un país' con click en el mouse y presionar delete"),
+      helpText("+ info www.google.com/covid19/mobility"),
+      br(),
+      helpText('optimizado para visualizarse en pantallas PC o laptops.'),
+      helpText("en teléfonos celulares no se aprecia toda la información"),
+      
       width = 3 
     ),
     
@@ -237,7 +245,7 @@ server <- shinyServer(function(input, output) {
   output$plot <- renderPlot({
     grafico()
     
-  },height = 600 )
+  },height = 620 )
   
 })
 
