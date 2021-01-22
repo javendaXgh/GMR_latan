@@ -6,7 +6,7 @@ library(dplyr)
 library(scales)
 #library(plyr)
 #library(ggrepel)
-#library(viridis)
+library(viridis)
 library(wesanderson)
 #library(ggthemes)
 library(shiny)
@@ -17,6 +17,8 @@ library(ggplot2)
 
 global <- readRDS('global.rds')
 
+
+
 dias_laborales <- c('viernes','lunes','jueves','martes','miercoles')
 
 paises <- unique(global$region)
@@ -24,7 +26,8 @@ paises <- unique(global$region)
 listado_paises <- paises
 
 #variables leyenda grafico
-caption=paste("datos obtenidos de www.google.com/covid19/mobility/ procesados @javendaXtw. Actualizados al",max(global$fecha))
+caption=paste("datos obtenidos de www.google.com/covid19/mobility/ procesados @javendaXtw. 
+              Actualizados al",max(global$fecha))
 
 
 global_filtros <- function (paises, 
@@ -40,12 +43,6 @@ global_filtros <- function (paises,
   filter(global,region %in% paises)->global
   global$region <- as.character(global$region)
   
-  
-  # if(sub_nac!=FALSE){
-  #   filter(global, sub_reg1 %in% sub_nac) ->global
-  # }else{
-  #   filter (global, sub_reg1=='') -> global
-  # }
   if(post==TRUE){
     filter(global, fecha>=inicio_ven) -> global
   }
@@ -85,7 +82,7 @@ gg_comp_paises <- function(paises,
                        weekend = weekend,
                        inicio= inicio,
                        fin=fin)
-
+  
   #variables de ayuda para grafico
   fecha_f=max(global$fecha)
   fecha_i=min(global$fecha)
@@ -113,7 +110,7 @@ gg_comp_paises <- function(paises,
          y = "%",
          colour = "País")+
     
-    #scale_color_viridis(discrete = TRUE, option = "D")+
+    scale_color_viridis(discrete = TRUE, option = "D")+
     #scale_fill_viridis(discrete = TRUE) +
     #scale_x_date(date_breaks='1 week',labels = date_format('%d-%m-%Y'))+
     scale_x_date(date_breaks='4 week',labels = date_format('%d-%m-%Y'))+
@@ -123,7 +120,7 @@ gg_comp_paises <- function(paises,
                                   face="bold.italic",colour="grey38"))+
     
     theme(panel.background = element_rect(fill = 'grey70', colour = 'red'))+
-    scale_color_manual(values = wes_palette("Royal1", n = length(paises)))+
+    # scale_color_manual(values = wes_palette("Royal1", n = length(paises)))+
     #grids(axis = c("xy", "x", "y"), color = "grey50",linetype = "dashed")+#BottleRocket1,Darjeeling2,Royal1
     #scale_color_brewer(palette = "Set1")+
     {if (hitos==TRUE & fecha_i<=df_eventos$a[1]& fecha_f>=df_eventos$a[length(df_eventos$a)])
@@ -138,20 +135,6 @@ df_eventos <- data.frame(
   stringsAsFactors = F)
 
 
-
-#source('funciones.R')
-
-
-
-
-# gg_comp_paises(paises=c('Venezuela', 'Colombia'),
-#                sub_nac=FALSE,
-#                post=FALSE, 
-#                weekend=FALSE, 
-#                inicio='2020-09-01',
-#                #fin='2020-05-14',
-#                elemento='zonas_residenciales',
-#                hitos=TRUE)
 sector <- c('lugares de trabajo'='lugares_de_trabajo',
             'supermercados y farmacias'='supermercados_y_farmacias',
             'parques'='parques',
@@ -159,14 +142,35 @@ sector <- c('lugares de trabajo'='lugares_de_trabajo',
             'estaciones de transporte publico'='estaciones_de_transporte_publico',
             'tiendas y ocio'='tiendas_y_ocio')
 
+textos <- 'Valor de referencia
+
+Los datos muestran cómo cambia la cantidad de visitantes en los lugares categorizados 
+(o el tiempo que pasan en ellos) en comparación con nuestros días de referencia. 
+Un día de referencia representa un valor normal en ese día de la semana. 
+El día de referencia es el valor medio del periodo de 5 semanas comprendido 
+entre el 3 de enero y el 6 de febrero del 2020.
+
+En cada región-categoría, el valor de referencia no es un valor único, 
+sino 7 valores individuales. El mismo número de visitantes en dos días diferentes 
+de la semana da lugar a cambios de porcentaje diferentes. Por lo tanto, recomendamos 
+
+lo siguiente:
+No deduzcas que los cambios mayores implican más visitas ni que los cambios menores
+implican menos visitas.
+Evita comparar los cambios de un día a otro. Sobre todo, los fines de semana con los 
+días laborables. 
+texto tomado de: '
+
+
+#################################################################
 # Define UI for dataset viewer app ----
 ui <- shinyUI(fluidPage(
   setBackgroundColor(
     color = "#003049"), #2A9D8F,264653
- 
+  
   # App title ----
   #titlePanel("Gráficos con datos del
-             #Google Mobility Report para países de Sur América"),
+  #Google Mobility Report para países de Sur América"),
   h1(id="big-heading", "Gráficos con datos del
              Google Mobility Report para países de Sur América"),
   tags$style(HTML("#big-heading{color: #e9c46a;}")),
@@ -184,27 +188,37 @@ ui <- shinyUI(fluidPage(
                   multiple=TRUE),
       selectInput('sector', 'Elegir un sector:',
                   choices=names(sector)),
+      #h5(id='prueba','Seleccionar rango de fechas: '),
+      #h6(id='prueba2','(año-mes-día)'),
+      #h1(id="big-heading", "Shiny App Test"),
+      
       dateRangeInput('dateRange',
-                     label = 'Seleccionar rango de fechas: (año-mes-día) ',
+                     label = 'Seleccionar rango de fechas (año-mes-día): ',
+                     #h1(id="big-heading", "Shiny App Test"),
+                     
+                     
                      start = min(global$fecha), end = max(global$fecha)
       ),
+      tags$style(HTML("#dateRange,#prueba2{color: #03045e;}")),
       
       awesomeCheckbox('we_ends','Excluir fines de semana:',
                       value = FALSE,status = "info"),
       br(),
-
-      actionButton("update", "generar gráfico"),
+      
+      #actionButton("update", "generar gráfico"),
       helpText("Instrucciones de uso:"),
-      helpText("1) Seleccionar uno o más países colocando el puntero en el campo 'elegir un país' e ir añadiendo uno a uno "),
+      helpText("1) Seleccionar uno o más países colocando el puntero en el campo 'elegir un país' 
+               e ir añadiendo uno a uno. Para eliminar país seleccione con el puntero y presione delete "),
       helpText("2) Seleccionar el sector a visualizar en el campo 'Elegir un sector"),
       helpText("3) Seleccionar un rango de fechas no anterior al 2020-01-15 (formato 'año-mes-día')"),
       helpText("4) Seleccionar, o deseleccionar, botón para 'excluir fines de semana' del gráfico"),
-      helpText("5) Generar o actualizar el gráfico presionando el botón 'generar gráfico"),
-      helpText("6) Para eliminar un país seleccionarlo en el campo 'Elegir un país' con click en el mouse y presionar delete"),
-      helpText("+ info www.google.com/covid19/mobility"),
+      #helpText("5) Generar o actualizar el gráfico presionando el botón 'generar gráfico"),
+      #helpText("6) Para eliminar un país seleccionarlo en el campo 'Elegir un país' con click 
+      #en el mouse y presionar delete"),
+      a(href="https://www.google.com/covid19/mobility/",'+ info "Google Mobility Report"'),
       br(),
       helpText('optimizado para visualizarse en pantallas PC o laptops.'),
-      helpText("en teléfonos celulares no se aprecia toda la información"),
+      helpText("en teléfonos celulares puede ocurrir que no se aprecie toda la información"),
       
       width = 3 
     ),
@@ -212,44 +226,51 @@ ui <- shinyUI(fluidPage(
     # Main panel for displaying outputs ----
     mainPanel(
       
-      plotOutput("plot",width = "100%")
+      plotOutput("plot",width = "100%"),
+      br(),
+      br(),
+      br(),
+      br(),
+      br(),
+      br(),
+      br(),
+      br(),
+      br(),
+      br(),
+      br(),
+      br(),
+      p(id='l1',strong(textos)),
+      
+      a(id='l2',href="https://support.google.com/covid19-mobility/answer/9824897?hl=es&ref_topic=9822927",
+        'Ayuda "Google Mobility Report"'),   
+      tags$style(HTML("#l1{color: #fefae0;}")),
+      tags$style(HTML("#l2{color: #90e0ef;}"))
+      
     )
-    
   )
 ))
 
-# Define server logic to summarize and view selected dataset ----
 server <- shinyServer(function(input, output) {
   
-  
-  h <- eventReactive(input$update,{
-    elemento = switch(input$sector,
-                      'lugares de trabajo'='lugares_de_trabajo',
-                      'supermercados y farmacias'='supermercados_y_farmacias',
-                      'parques'='parques',
-                      'zonas residenciales'='zonas_residenciales',
-                      'estaciones de transporte publico'='estaciones_de_transporte_publico',
-                      'tiendas y ocio'='tiendas_y_ocio')
-    
+  j <- observeEvent(input$sector,{
+    elemento2 = switch(input$sector,
+                       'lugares de trabajo'='lugares_de_trabajo',
+                       'supermercados y farmacias'='supermercados_y_farmacias',
+                       'parques'='parques',
+                       'zonas residenciales'='zonas_residenciales',
+                       'estaciones de transporte publico'='estaciones_de_transporte_publico',
+                       'tiendas y ocio'='tiendas_y_ocio')
+    output$plot <- renderPlot({
+      gg_comp_paises(paises=input$pais,
+                     inicio=input$dateRange[1],
+                     fin= input$dateRange[2],
+                     elemento=elemento2,
+                     weekend=input$we_ends)
+    },height = 620 )
   })
-  grafico <- eventReactive(input$update,{
-    gg_comp_paises(paises=input$pais,
-                   inicio=input$dateRange[1],
-                   fin= input$dateRange[2],
-                   elemento=h(),
-                   weekend=input$we_ends
-    )
-  })
-  
-  
-  output$plot <- renderPlot({
-    grafico()
-    
-  },height = 620 )
-  
 })
+
 
 # Create Shiny app ----
 shinyApp(ui=ui,server= server)
-
 
