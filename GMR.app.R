@@ -13,22 +13,15 @@ library(shiny)
 library(shinyWidgets)
 library(ggplot2)
 
-#download.file('https://github.com/javendaXgh/GMR_latan/raw/master/global.rds','global.rds')
+download.file('https://github.com/javendaXgh/GMR_latan/raw/master/global.rds','global.rds')
 
 global <- readRDS('global.rds')
-
-
-
 dias_laborales <- c('viernes','lunes','jueves','martes','miercoles')
-
 paises <- unique(global$region)
-
 listado_paises <- paises
-
 #variables leyenda grafico
 caption=paste("datos obtenidos de www.google.com/covid19/mobility/ procesados @javendaXtw. 
               Actualizados al",max(global$fecha))
-
 
 global_filtros <- function (paises, 
                             sub_nac=FALSE,
@@ -142,7 +135,7 @@ sector <- c('lugares de trabajo'='lugares_de_trabajo',
             'estaciones de transporte publico'='estaciones_de_transporte_publico',
             'tiendas y ocio'='tiendas_y_ocio')
 
-textos <- 'Valor de referencia
+textos <- 'Valor de referencia:
 
 Los datos muestran cómo cambia la cantidad de visitantes en los lugares categorizados 
 (o el tiempo que pasan en ellos) en comparación con nuestros días de referencia. 
@@ -168,9 +161,6 @@ ui <- shinyUI(fluidPage(
   setBackgroundColor(
     color = "#003049"), #2A9D8F,264653
   
-  # App title ----
-  #titlePanel("Gráficos con datos del
-  #Google Mobility Report para países de Sur América"),
   h1(id="big-heading", "Gráficos con datos del
              Google Mobility Report para países de Sur América"),
   tags$style(HTML("#big-heading{color: #e9c46a;}")),
@@ -178,74 +168,57 @@ ui <- shinyUI(fluidPage(
   # Sidebar layout with input and output definitions ----
   sidebarLayout(
     
-    # Sidebar panel for inputs ----
     sidebarPanel(
-      
-      # Input: Select a dataset ----
       selectInput("pais", "Elegir un país:",
                   choices=paises ,
                   selected = 'Venezuela',
                   multiple=TRUE),
       selectInput('sector', 'Elegir un sector:',
                   choices=names(sector)),
-      #h5(id='prueba','Seleccionar rango de fechas: '),
-      #h6(id='prueba2','(año-mes-día)'),
-      #h1(id="big-heading", "Shiny App Test"),
       
       dateRangeInput('dateRange',
                      label = 'Seleccionar rango de fechas (año-mes-día): ',
-                     #h1(id="big-heading", "Shiny App Test"),
-                     
-                     
-                     start = min(global$fecha), end = max(global$fecha)
+                     start = min(global$fecha), end = max(global$fecha),
+                     min=min(global$fecha),
+                     max=max(global$fecha),
+                     language='es',
+                     separator = 'hasta'
       ),
       tags$style(HTML("#dateRange,#prueba2{color: #03045e;}")),
       
       awesomeCheckbox('we_ends','Excluir fines de semana:',
                       value = FALSE,status = "info"),
       br(),
-      
-      #actionButton("update", "generar gráfico"),
       helpText("Instrucciones de uso:"),
       helpText("1) Seleccionar uno o más países colocando el puntero en el campo 'elegir un país' 
                e ir añadiendo uno a uno. Para eliminar país seleccione con el puntero y presione delete "),
       helpText("2) Seleccionar el sector a visualizar en el campo 'Elegir un sector"),
       helpText("3) Seleccionar un rango de fechas no anterior al 2020-01-15 (formato 'año-mes-día')"),
       helpText("4) Seleccionar, o deseleccionar, botón para 'excluir fines de semana' del gráfico"),
-      #helpText("5) Generar o actualizar el gráfico presionando el botón 'generar gráfico"),
-      #helpText("6) Para eliminar un país seleccionarlo en el campo 'Elegir un país' con click 
-      #en el mouse y presionar delete"),
       a(href="https://www.google.com/covid19/mobility/",'+ info "Google Mobility Report"'),
       br(),
       helpText('optimizado para visualizarse en pantallas PC o laptops.'),
       helpText("en teléfonos celulares puede ocurrir que no se aprecie toda la información"),
+      br(),
+      br(),
+      downloadButton("downloadData", "descargar datos"),
       
       width = 3 
     ),
-    
     # Main panel for displaying outputs ----
     mainPanel(
       
       plotOutput("plot",width = "100%"),
-      br(),
-      br(),
-      br(),
-      br(),
-      br(),
-      br(),
-      br(),
-      br(),
-      br(),
-      br(),
-      br(),
-      br(),
+      br(),br(),br(),br(),br(),br(),br(),br(),br(),br(),br(),br(),br(),br(),br(),
+      #imageOutput('d'),
+      #HTML('<center><img src="venezuela.gif"></center>'),
+      img(src= "venezuela.gif",align='center', heigth='65%', width='100%', align='right'),
+      br(),br(),br(),br(),br(),
       p(id='l1',strong(textos)),
-      
       a(id='l2',href="https://support.google.com/covid19-mobility/answer/9824897?hl=es&ref_topic=9822927",
         'Ayuda "Google Mobility Report"'),   
       tags$style(HTML("#l1{color: #fefae0;}")),
       tags$style(HTML("#l2{color: #90e0ef;}"))
-      
     )
   )
 ))
@@ -267,10 +240,25 @@ server <- shinyServer(function(input, output) {
                      elemento=elemento2,
                      weekend=input$we_ends)
     },height = 620 )
+    
   })
+  
+  observeEvent(list(input$pais,input$dateRange[2],input$dateRange[1]) ,{
+    global_dw <- global%>%
+      filter(fecha>=input$dateRange[1])%>%
+      filter(fecha<=input$dateRange[2])%>%
+      filter(region %in% input$pais)
+    output$downloadData <- downloadHandler(
+      filename = paste0('gmr_sel_',input$dateRange[1],'_',input$dateRange[1],'.txt'),
+      content = function(file) {
+        write.csv(global_dw, file, row.names = TRUE)
+      })
+  })
+  
 })
-
 
 # Create Shiny app ----
 shinyApp(ui=ui,server= server)
+
+
 
