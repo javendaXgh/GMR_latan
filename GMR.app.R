@@ -99,18 +99,19 @@ gg_comp_paises <- function(paises,
                           ' hasta:',format(max(df$fecha),'%d-%m-%Y')) ,
          caption = caption,
          #tag = "Gráfico 1",
-         x = "fecha",
+         x = "",
          y = "%",
-         colour = "País")+
+         colour = "PAÍS: ")+
     
     scale_color_viridis(discrete = TRUE, option = "D")+
     #scale_fill_viridis(discrete = TRUE) +
     #scale_x_date(date_breaks='1 week',labels = date_format('%d-%m-%Y'))+
-    scale_x_date(date_breaks='4 week',labels = date_format('%d-%m-%Y'))+
+    scale_x_date(date_breaks='2 week',labels = date_format('%d-%m-%Y'))+
+    theme(axis.text.x = element_text(angle = 70, vjust = 0.5, hjust=1))+
     ggtitle(paste('Cambios en movilidad: ',nombre_paises))+
     theme(plot.title=element_text(size=rel(1.5),
                                   lineheight=.9,family="Times",
-                                  face="bold.italic",colour="grey38"))+
+                                  face="bold.italic",colour="grey10"))+
     
     theme(panel.background = element_rect(fill = 'grey70', colour = 'red'))+
     # scale_color_manual(values = wes_palette("Royal1", n = length(paises)))+

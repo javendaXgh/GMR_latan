@@ -187,7 +187,7 @@ gg_animado_paises <- lineas <- function(paises,
     #labs( title= "En casa / fecha: {frame_along}")+
     #theme(panel.background = element_rect(fill = "snow", colour = "#6D9EC1",
     #size = 2, linetype = "solid"))+
-    theme(panel.background = element_rect(fill = 'grey60', colour = 'red'))+
+    theme(panel.background = element_rect(fill = 'grey75', colour = 'red'))+
     labs(subtitle = paste('Sector: ',gsub('_',' ',elemento),". desde: ",format(min(df$fecha),'%d-%m-%Y'),
                           ' hasta:',format(max(df$fecha),'%d-%m-%Y')) ,
          caption = caption,
