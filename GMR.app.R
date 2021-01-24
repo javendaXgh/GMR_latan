@@ -13,7 +13,7 @@ library(shiny)
 library(shinyWidgets)
 library(ggplot2)
 
-download.file('https://github.com/javendaXgh/GMR_latan/raw/master/global.rds','global.rds')
+#download.file('https://github.com/javendaXgh/GMR_latan/raw/master/global.rds','global.rds')
 
 global <- readRDS('global.rds')
 dias_laborales <- c('viernes','lunes','jueves','martes','miercoles')
