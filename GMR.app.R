@@ -12,8 +12,9 @@ library(wesanderson)
 library(shiny)
 library(shinyWidgets)
 library(ggplot2)
+library(plotly)
 
-#download.file('https://github.com/javendaXgh/GMR_latan/raw/master/global.rds','global.rds')
+download.file('https://github.com/javendaXgh/GMR_latan/raw/master/global.rds','global.rds')
 
 global <- readRDS('global.rds')
 dias_laborales <- c('viernes','lunes','jueves','martes','miercoles')
@@ -86,9 +87,9 @@ gg_comp_paises <- function(paises,
   
   nombre_paises=paste(paste(paises,collapse = '-'),
                       if(sub_nac){paste(sub_nac,collapse = '-')})
-  ggplot(df, aes(x=fecha,colour=region) ) +
+  ggplotly(ggplot(df, aes(x=fecha,colour=region) ) +
     aes_string(y=elemento)+
-    geom_line(size=1.4)+
+    geom_line(size=.5)+
     #geom_point()+
     geom_hline(aes( yintercept=0), color="black", size=.3, alpha=.8)+
     theme_bw()+
@@ -120,7 +121,11 @@ gg_comp_paises <- function(paises,
     {if (hitos==TRUE & fecha_i<=df_eventos$a[1]& fecha_f>=df_eventos$a[length(df_eventos$a)])
       geom_vline(data=df_eventos, mapping=aes(xintercept=a), color="red",linetype="dotted", size=.5, alpha=.5)}+
     {if (hitos==TRUE & fecha_i<=df_eventos$a[1]& fecha_f>=df_eventos$a[length(df_eventos$a)])
-      geom_text(data=df_eventos,aes(x=a, label=b , y = posicion_leyenda), colour="black", angle=90, size=1.8)}
+      geom_text(data=df_eventos,aes(x=a, label=b , y = posicion_leyenda), colour="black", angle=90, size=1.8)})%>%
+    layout(legend = list(orientation = "h",   # show entries horizontally
+                         xanchor = "center",  # use center of legend as anchor
+                         x = .5,y=-.2)) %>%
+    config(locale = 'es')
 }  
 
 df_eventos <- data.frame(
@@ -170,6 +175,9 @@ ui <- shinyUI(fluidPage(
   sidebarLayout(
     
     sidebarPanel(
+      a(href="https://www.javenda.me/",'volver al Home'),
+      br(),
+      
       selectInput("pais", "Elegir un país:",
                   choices=paises ,
                   selected = 'Venezuela',
@@ -209,7 +217,9 @@ ui <- shinyUI(fluidPage(
     # Main panel for displaying outputs ----
     mainPanel(
       
-      plotOutput("plot",width = "100%"),
+      plotlyOutput("plot",width = "100%",height = '620px'),#plotlyOutpu
+      
+      #plotOutput("plot",width = "100%"),#plotlyOutpu
       br(),br(),br(),br(),br(),br(),br(),br(),br(),br(),br(),br(),br(),br(),br(),
       #imageOutput('d'),
       #HTML('<center><img src="venezuela.gif"></center>'),
@@ -234,13 +244,21 @@ server <- shinyServer(function(input, output) {
                        'zonas residenciales'='zonas_residenciales',
                        'estaciones de transporte publico'='estaciones_de_transporte_publico',
                        'tiendas y ocio'='tiendas_y_ocio')
-    output$plot <- renderPlot({
+    # output$plot <- renderPlot({
+    #   gg_comp_paises(paises=input$pais,
+    #                  inicio=input$dateRange[1],
+    #                  fin= input$dateRange[2],
+    #                  elemento=elemento2,
+    #                  weekend=input$we_ends)
+    # },height = 620 )
+    
+    output$plot <- renderPlotly({
       gg_comp_paises(paises=input$pais,
                      inicio=input$dateRange[1],
                      fin= input$dateRange[2],
                      elemento=elemento2,
                      weekend=input$we_ends)
-    },height = 620 )
+    } )
     
   })
   
